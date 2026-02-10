@@ -140,12 +140,14 @@ export function useBanglaTyping({
 			if (e.key === "ArrowRight" || e.key === "ArrowDown") {
 				e.preventDefault();
 				setSelectedSuggestionIndex((prev) =>
-					Math.min(prev + 1, suggestions.length - 1),
+					(prev + 1) % suggestions.length,
 				);
 				return;
 			} else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
 				e.preventDefault();
-				setSelectedSuggestionIndex((prev) => Math.max(prev - 1, 0));
+				setSelectedSuggestionIndex((prev) =>
+					(prev - 1 + suggestions.length) % suggestions.length,
+				);
 				return;
 			} else if (e.key === "Enter") {
 				e.preventDefault();
