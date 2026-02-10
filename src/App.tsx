@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 
 function App() {
 	const [mode, setMode] = useState<"english" | "bangla">("english");
-
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 
 	const {
@@ -22,7 +21,7 @@ function App() {
 	} = useBanglaTyping({ mode });
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+		<div style={{ display: "flex", alignItems: "center", width: "1000px", justifyContent: "center", flexDirection: "column", gap: "8px" }}>
 			<button
 				onClick={() => {
 					setMode(mode === "english" ? "bangla" : "english");
@@ -35,7 +34,7 @@ function App() {
 				ref={inputRef}
 				style={{
 					position: "relative",
-					minHeight: "100px",
+					minHeight: "200px",
 					width: "600px",
 					resize: "none",
 					overflow: "auto",
@@ -51,7 +50,6 @@ function App() {
 				<div
 					style={{
 						position: "absolute",
-
 						zIndex: 50,
 						marginTop: "4px",
 						marginBottom: "4px",

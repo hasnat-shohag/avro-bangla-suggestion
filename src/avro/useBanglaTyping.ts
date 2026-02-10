@@ -93,6 +93,25 @@ export function useBanglaTyping({
 		}, DEBOUNCE_DELAY);
 	};
 
+	// Utility function to extract word boundary detection logic
+	// Handles spaces, newlines, tabs, and other whitespace characters
+	const getWordBoundary = (beforeCursor: string) => {
+		const trimmedBeforeCursor = beforeCursor.replace(/[\s]*$/, "");
+		const lastWordBoundary = trimmedBeforeCursor.search(/[\s][^\s]*$/);
+		const wordStartIndex = lastWordBoundary === -1 ? 0 : lastWordBoundary + 1;
+		const currentWord = beforeCursor.substring(wordStartIndex);
+		
+		return { wordStartIndex, currentWord };
+	};
+
+	// Utility function to clear suggestions unconditionally
+	const clearSuggestions = () => {
+		suggestionsVisibleRef.current = false;
+		setSuggestions([]);
+		setSelectedSuggestionIndex(0);
+		onSuggestionsChange?.([]);
+	};
+
 	const applySuggestion = (
 		suggestion: string,
 		element: HTMLInputElement | HTMLTextAreaElement | null,
@@ -105,11 +124,11 @@ export function useBanglaTyping({
 
 		const beforeCursor = currentValue.substring(0, cursorPosition);
 		const afterCursor = currentValue.substring(cursorPosition);
-		const lastSpaceIndex = beforeCursor.lastIndexOf(" ");
-		const currentWord = beforeCursor.substring(lastSpaceIndex + 1);
+		
+		const { wordStartIndex, currentWord } = getWordBoundary(beforeCursor);
 
 		if (currentWord.trim()) {
-			const beforeWord = beforeCursor.substring(0, lastSpaceIndex + 1);
+			const beforeWord = beforeCursor.substring(0, wordStartIndex);
 			// Apply suggestion with space after it
 			const newText = beforeWord + suggestion + " " + afterCursor;
 			const newCursorPos = beforeWord.length + suggestion.length + 1;
@@ -119,10 +138,7 @@ export function useBanglaTyping({
 			onTextChange?.(newText);
 
 			// Clear suggestions immediately
-			suggestionsVisibleRef.current = false;
-			setSuggestions([]);
-			setSelectedSuggestionIndex(0);
-			onSuggestionsChange?.([]);
+			clearSuggestions();
 
 			// Set cursor position after React updates the DOM
 			setTimeout(() => {
@@ -170,8 +186,7 @@ export function useBanglaTyping({
 			const beforeCursor = text.substring(0, cursorPosition);
 			const afterCursor = text.substring(cursorPosition);
 
-			const lastSpaceIndex = beforeCursor.lastIndexOf(" ");
-			const currentWord = beforeCursor.substring(lastSpaceIndex + 1);
+			const { wordStartIndex, currentWord } = getWordBoundary(beforeCursor);
 
 			if (currentWord.trim()) {
 				try {
@@ -188,7 +203,7 @@ export function useBanglaTyping({
 						}
 					}
 
-					const beforeWord = beforeCursor.substring(0, lastSpaceIndex + 1);
+					const beforeWord = beforeCursor.substring(0, wordStartIndex);
 					const newText = beforeWord + convertedWord + " " + afterCursor;
 
 					setText(newText);
@@ -210,20 +225,14 @@ export function useBanglaTyping({
 				}
 
 				// Clear suggestions
-				suggestionsVisibleRef.current = false;
-				setSuggestions([]);
-				setSelectedSuggestionIndex(0);
-				onSuggestionsChange?.([]);
+				clearSuggestions();
 			} else {
 				const newText = text + " ";
 				setText(newText);
 				onTextChange?.(newText);
 
 				// Clear suggestions
-				suggestionsVisibleRef.current = false;
-				setSuggestions([]);
-				setSelectedSuggestionIndex(0);
-				onSuggestionsChange?.([]);
+				clearSuggestions();
 			}
 		}
 	};
@@ -238,8 +247,8 @@ export function useBanglaTyping({
 		const targetElement = e.target as HTMLInputElement | HTMLTextAreaElement;
 		const cursorPosition = targetElement.selectionStart ?? 0;
 		const beforeCursor = newText.substring(0, cursorPosition);
-		const lastSpaceIndex = beforeCursor.lastIndexOf(" ");
-		const currentWord = beforeCursor.substring(lastSpaceIndex + 1);
+		
+		const { currentWord } = getWordBoundary(beforeCursor);
 
 		if (mode === "english") {
 			return;
