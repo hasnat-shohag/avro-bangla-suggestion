@@ -1,75 +1,163 @@
-# React + TypeScript + Vite
+# avro-bangla-suggestions
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A lightweight React hook providing **Avro phonetics-based Bangla typing suggestions** — drop it into any React or Next.js project to get instant Bangla word suggestions as users type in English phonetics.
 
-Currently, two official plugins are available:
+[![npm version](https://badge.fury.io/js/avro-bangla-suggestions.svg)](https://www.npmjs.com/package/avro-bangla-suggestions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Features
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- 🔤 Avro phonetics-to-Bangla suggestions in real time
+- ⌨️ Keyboard navigation (Arrow keys + Enter to select)
+- 🔄 Space-to-commit: pressing space auto-converts the current word
+- 🧵 Web Worker powered — phonetics processing happens off the main thread
+- 🌐 Works with `<input>` and `<textarea>` elements
+- 📦 Zero UI dependencies — bring your own suggestion UI
 
-Note: This will impact Vite dev & build performances.
+---
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install avro-bangla-suggestions
+# or
+yarn add avro-bangla-suggestions
+# or
+pnpm add avro-bangla-suggestions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+> **Peer dependencies**: `react` and `react-dom` v18 or v19 must be installed in your project.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Quick Start
+
+```tsx
+import { useRef, useState } from "react";
+import { useBanglaTyping } from "avro-bangla-suggestions";
+
+export default function BanglaInput() {
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [mode, setMode] = useState<"bangla" | "english">("bangla");
+
+  const {
+    text,
+    handleChange,
+    handleKeyDown,
+    handlePaste,
+    handleFocus,
+    handleBlur,
+    suggestions,
+    selectedSuggestionIndex,
+    applySuggestion,
+    isFocused,
+  } = useBanglaTyping({ mode });
+
+  return (
+    <div style={{ position: "relative" }}>
+      <textarea
+        ref={inputRef}
+        value={text}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+      />
+
+      {/* Suggestion dropdown */}
+      {isFocused && suggestions.length > 0 && (
+        <div style={{ display: "flex", gap: 4, position: "absolute" }}>
+          {suggestions.map((word, idx) => (
+            <button
+              key={idx}
+              onMouseDown={(e) => {
+                e.preventDefault(); // prevent blur
+                applySuggestion(word, inputRef.current);
+              }}
+              style={{
+                background: selectedSuggestionIndex === idx ? "#7c3aed" : "#f3f4f6",
+                color: selectedSuggestionIndex === idx ? "#fff" : "#374151",
+              }}
+            >
+              {word}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 ```
+
+---
+
+## `useBanglaTyping` API
+
+### Parameters
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `mode` | `"bangla" \| "english"` | `"english"` | Enable Bangla suggestions only when `"bangla"` |
+| `initialText` | `string` | `""` | Initial value of the text state |
+| `onTextChange` | `(text: string) => void` | — | Called whenever the text changes |
+| `onSuggestionsChange` | `(suggestions: string[]) => void` | — | Called when the suggestion list updates |
+| `onSuggestionsHidden` | `() => void` | — | Called when suggestions are dismissed |
+
+### Returns
+
+| Name | Type | Description |
+|------|------|-------------|
+| `text` | `string` | Current text value (use as controlled `value`) |
+| `handleChange` | `ChangeEventHandler` | Attach to `onChange` |
+| `handleKeyDown` | `KeyboardEventHandler` | Attach to `onKeyDown` |
+| `handlePaste` | `ClipboardEventHandler` | Attach to `onPaste` |
+| `handleFocus` | `() => void` | Attach to `onFocus` |
+| `handleBlur` | `() => void` | Attach to `onBlur` |
+| `suggestions` | `string[]` | Current suggestion list |
+| `selectedSuggestionIndex` | `number` | Index of the highlighted suggestion |
+| `applySuggestion` | `(word: string, el: HTMLInputElement \| HTMLTextAreaElement \| null) => void` | Call on suggestion click |
+| `isFocused` | `boolean` | Whether the input is focused |
+| `hideSuggestions` | `() => void` | Programmatically dismiss suggestions |
+
+### Keyboard Shortcuts (Bangla mode)
+
+| Key | Action |
+|-----|--------|
+| `→` / `↓` | Select next suggestion |
+| `←` / `↑` | Select previous suggestion |
+| `Enter` | Apply selected suggestion |
+| `Space` | Auto-convert and commit current word |
+
+---
+
+## TypeScript Types
+
+```ts
+import type { TAvroSuggestion, TAvroPhonetic } from "avro-bangla-suggestions";
+```
+
+---
+
+## Advanced: Worker Utilities
+
+If you need direct access to the Avro worker:
+
+```ts
+import { initAvroWorker, getGlobalAvroWorker } from "avro-bangla-suggestions";
+
+// Create a new instance (useful if you need isolated state)
+const worker = initAvroWorker();
+const result = await worker.getSuggestion("ami");
+
+// Or use the shared singleton
+const sharedWorker = getGlobalAvroWorker();
+```
+
+---
+
+## License
+
+[MIT](./LICENSE) © Hasnat Shohag
