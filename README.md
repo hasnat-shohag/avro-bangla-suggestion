@@ -3,7 +3,7 @@
 A lightweight React hook providing **Avro phonetics-based Bangla typing suggestions** — drop it into any React or Next.js project to get instant Bangla word suggestions as users type in English phonetics.
 
 [![npm version](https://badge.fury.io/js/avro-bangla-suggestions.svg)](https://www.npmjs.com/package/avro-bangla-suggestions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://www.npmjs.com/package/avro-bangla-suggestions?activeTab=code)
 
 ---
 
@@ -27,9 +27,6 @@ yarn add avro-bangla-suggestions
 # or
 pnpm add avro-bangla-suggestions
 ```
-
-> **Peer dependencies**: `react` and `react-dom` v18 or v19 must be installed in your project.
-
 ---
 
 ## Quick Start
@@ -160,4 +157,4 @@ const sharedWorker = getGlobalAvroWorker();
 
 ## License
 
-[MIT](./LICENSE) © Hasnat Shohag
+[MIT](https://www.npmjs.com/package/avro-bangla-suggestions?activeTab=code) © Hasnat Shohag
