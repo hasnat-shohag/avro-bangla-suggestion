@@ -105,6 +105,9 @@ export function useBanglaTyping({
 	};
 
 	const clearSuggestions = () => {
+		if (debounceTimerRef.current) {
+			clearTimeout(debounceTimerRef.current);
+		}
 		suggestionsVisibleRef.current = false;
 		setSuggestions([]);
 		setSelectedSuggestionIndex(0);
@@ -166,50 +169,34 @@ export function useBanglaTyping({
 			}
 		}
 
-		if (e.key === " " && mode !== "english") {
-			e.preventDefault();
-
-			const targetElement = e.target as HTMLInputElement | HTMLTextAreaElement;
+		if (e.key === " " && mode === "bangla") {
+			const targetElement = e.currentTarget as HTMLInputElement | HTMLTextAreaElement;
+			const currentValue = targetElement.value;
 			const cursorPosition = targetElement.selectionStart ?? 0;
-			const beforeCursor = text.substring(0, cursorPosition);
-			const afterCursor = text.substring(cursorPosition);
-			const { wordStartIndex, currentWord } = getWordBoundary(beforeCursor);
+			const beforeCursor = currentValue.substring(0, cursorPosition);
 
-			if (currentWord.trim()) {
-				try {
-					let convertedWord = currentWord;
+			if (beforeCursor.length > 0 && !/\s$/.test(beforeCursor)) {
+				e.preventDefault();
+				const { currentWord } = getWordBoundary(beforeCursor);
+				let convertedWord = currentWord.trim();
 
-					if (suggestions.length > 0) {
-						convertedWord = suggestions[selectedSuggestionIndex];
-					} else {
+				if (suggestionsVisibleRef.current && suggestions.length > 0) {
+					convertedWord = suggestions[selectedSuggestionIndex];
+				} else {
+					try {
 						await ensureAvroLoaded();
-						const res = getSuggestion(currentWord);
+						const res = getSuggestion(currentWord.trim());
 						if (res && res.words.length > 0) {
 							convertedWord = res.words[0];
 						}
+					} catch (err) {
+						console.error("Error converting word on space:", err);
 					}
-
-					const beforeWord = beforeCursor.substring(0, wordStartIndex);
-					const newText = beforeWord + convertedWord + " " + afterCursor;
-					setText(newText);
-					onTextChange?.(newText);
-
-					const newCursorPos = beforeWord.length + convertedWord.length + 1;
-					setTimeout(() => {
-						targetElement.selectionStart = targetElement.selectionEnd =
-							newCursorPos;
-					}, 0);
-				} catch (err) {
-					console.error("Error converting word on space:", err);
-					const newText = text + " ";
-					setText(newText);
-					onTextChange?.(newText);
 				}
-				clearSuggestions();
+
+				applySuggestion(convertedWord, targetElement);
+				return;
 			} else {
-				const newText = text + " ";
-				setText(newText);
-				onTextChange?.(newText);
 				clearSuggestions();
 			}
 		}

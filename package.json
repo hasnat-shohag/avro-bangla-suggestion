@@ -18,7 +18,7 @@
     "avro phonetics integration",
     "avro phonetics suggestions integration"
   ],
-  "version": "0.0.1",
+  "version": "0.0.3",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
