@@ -29,6 +29,7 @@ export function useBanglaTyping({
 
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const suggestionsVisibleRef = useRef<boolean>(false);
+	const suggestionForWordRef = useRef<string>("");
 
 	useEffect(() => {
 		setText(initialText);
@@ -57,11 +58,13 @@ export function useBanglaTyping({
 			setSelectedSuggestionIndex(0);
 			onSuggestionsChange?.([]);
 			suggestionsVisibleRef.current = false;
+			suggestionForWordRef.current = "";
 			onSuggestionsHidden?.();
 		}
 	};
 
 	const updateSuggestions = (currentWord: string) => {
+		// clear the debounce timer if it exists, will prevent when user types fast and hit space then suggestions will not be shown for the previous word
 		if (debounceTimerRef.current) {
 			clearTimeout(debounceTimerRef.current);
 		}
@@ -81,6 +84,8 @@ export function useBanglaTyping({
 					setSuggestions(res.words);
 					setSelectedSuggestionIndex(0);
 					suggestionsVisibleRef.current = true;
+					// suggestionForWordRef will ensure that the suggestion is for the current word
+					suggestionForWordRef.current = currentWord.trim();
 					onSuggestionsChange?.(res.words);
 				} else {
 					hideSuggestions();
@@ -109,6 +114,7 @@ export function useBanglaTyping({
 			clearTimeout(debounceTimerRef.current);
 		}
 		suggestionsVisibleRef.current = false;
+		suggestionForWordRef.current = "";
 		setSuggestions([]);
 		setSelectedSuggestionIndex(0);
 		onSuggestionsChange?.([]);
@@ -180,7 +186,13 @@ export function useBanglaTyping({
 				const { currentWord } = getWordBoundary(beforeCursor);
 				let convertedWord = currentWord.trim();
 
-				if (suggestionsVisibleRef.current && suggestions.length > 0) {
+				if (
+					suggestionsVisibleRef.current &&
+					suggestions.length > 0 &&
+					// suggestionForWordRef will ensure that the suggestion is for the current word
+					// suppose the current word is 'ami' and suggestionForWordRef.current is 'am' then it will not match 
+					suggestionForWordRef.current === currentWord.trim()
+				) {
 					convertedWord = suggestions[selectedSuggestionIndex];
 				} else {
 					try {
