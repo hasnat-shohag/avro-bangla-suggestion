@@ -231,7 +231,3 @@ const sharedWorker = getGlobalAvroWorker();
 ```
 
 ---
-
-## License
-
-[MIT](https://www.npmjs.com/package/avro-bangla-suggestions?activeTab=code) © Hasnat Shohag
