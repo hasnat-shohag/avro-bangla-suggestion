@@ -127,7 +127,7 @@ export default function BanglaInput() {
           }}
           onMouseDown={(e) => e.preventDefault()} // Prevent blur
         >
-          {suggestions.map((item, idx) => {
+          {suggestions.map((item: string, idx: number) => {
             const isSelected = selectedSuggestionIndex === idx;
 
             return (
@@ -221,20 +221,7 @@ https://cdn.jsdelivr.net/npm/avro-bangla-engine@0.0.1/avro.min.js
 
 > jsDelivr has global edge caching, automatic CORS headers, and excellent uptime — safe for production use as-is.
 
-### Self-host (optional, for production environments without CDN access)
 
-Copy `avro.min.js` to your `public/` folder and pass its local URL:
-
-```bash
-cp node_modules/avro-bangla-engine/avro.min.js public/avro.min.js
-```
-
-```tsx
-useBanglaTyping({
-  mode: "bangla",
-  avroScriptUrl: "/avro.min.js",
-});
-```
 
 ---
 
