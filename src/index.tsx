@@ -5,4 +5,4 @@
  */
 
 export { useBanglaTyping } from "./avro/useBanglaTyping";
-export type { TAvroSuggestion, TAvroPhonetic } from "./avro/types";
+export type { TAvroSuggestion } from "./avro/types";

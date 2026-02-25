@@ -1,6 +1,6 @@
 # avro-bangla-suggestions
 
-A lightweight React hook for Avro Phonetic Bangla suggestions and autocomplete. Easily integrate Bengali phonetic typing into your web applications
+A lightweight React hook for Avro Phonetic Bangla suggestions and autocomplete. Easily integrate Bengali phonetic typing into your web applications.
 
 [![npm version](https://badge.fury.io/js/avro-bangla-suggestions.svg)](https://www.npmjs.com/package/avro-bangla-suggestions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://www.npmjs.com/package/avro-bangla-suggestions?activeTab=code)
@@ -13,9 +13,9 @@ A lightweight React hook for Avro Phonetic Bangla suggestions and autocomplete. 
 - 🔤 Avro phonetics-to-Bangla suggestions in real time
 - ⌨️ Keyboard navigation (Arrow keys + Enter to select)
 - 🔄 Space-to-commit: pressing space auto-converts the current word
-- 🧵 Web Worker powered — phonetics processing happens off the main thread
+- 📦 **Tiny package** (~7 KB) — the Avro engine loads from CDN at runtime
 - 🌐 Works with `<input>` and `<textarea>` elements
-- 📦 Zero UI dependencies — bring your own suggestion UI
+- 🎨 Zero UI dependencies — bring your own suggestion UI
 
 ---
 
@@ -206,27 +206,42 @@ export default function BanglaInput() {
 
 ---
 
-## TypeScript Types
+## Engine Loading
 
-```ts
-import type { TAvroSuggestion, TAvroPhonetic } from "avro-bangla-suggestions";
+The Avro phonetics engine (`avro.min.js`) is **not bundled** in this package — it loads at runtime from a URL. This keeps the package size tiny (~7 KB).
+
+### Default (zero-config): jsDelivr CDN
+
+By default, the engine loads automatically from:
+```
+https://cdn.jsdelivr.net/npm/avro-bangla-engine@0.0.1/avro.min.js
+```
+
+**No setup required.** The engine is loaded once and cached for the page's lifetime.
+
+> jsDelivr has global edge caching, automatic CORS headers, and excellent uptime — safe for production use as-is.
+
+### Self-host (optional, for production environments without CDN access)
+
+Copy `avro.min.js` to your `public/` folder and pass its local URL:
+
+```bash
+cp node_modules/avro-bangla-engine/avro.min.js public/avro.min.js
+```
+
+```tsx
+useBanglaTyping({
+  mode: "bangla",
+  avroScriptUrl: "/avro.min.js",
+});
 ```
 
 ---
 
-## Advanced: Worker Utilities
-
-If you need direct access to the Avro worker:
+## TypeScript Types
 
 ```ts
-import { initAvroWorker, getGlobalAvroWorker } from "avro-bangla-suggestions";
-
-// Create a new instance (useful if you need isolated state)
-const worker = initAvroWorker();
-const result = await worker.getSuggestion("ami");
-
-// Or use the shared singleton
-const sharedWorker = getGlobalAvroWorker();
+import type { TAvroSuggestion } from "avro-bangla-suggestions";
 ```
 
 ---

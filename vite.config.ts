@@ -21,7 +21,8 @@ export default defineConfig({
 				},
 			},
 		},
-		sourcemap: true,
+		// Sourcemaps excluded from npm via .npmignore anyway; disable to keep build clean
+		sourcemap: false,
 		emptyOutDir: true,
 	},
   plugins: [

@@ -12,9 +12,6 @@ interface UseBanglaTypingProps {
 
 const DEBOUNCE_DELAY = 200;
 
-// Kick off the avro.min.js dynamic import immediately (background load)
-void ensureAvroLoaded();
-
 export function useBanglaTyping({
 	initialText = "",
 	onTextChange,
@@ -30,6 +27,9 @@ export function useBanglaTyping({
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const suggestionsVisibleRef = useRef<boolean>(false);
 	const suggestionForWordRef = useRef<string>("");
+
+	// Kick off the engine load immediately in the background
+	void ensureAvroLoaded();
 
 	useEffect(() => {
 		setText(initialText);

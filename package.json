@@ -21,7 +21,7 @@
     "bangla-input",
     "transliteration"
 ],
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -36,9 +36,7 @@
   "files": [
     "dist/index.es.js",
     "dist/index.umd.js",
-    "dist/index.d.ts",
-    "dist/avro",
-    "dist/avro.min-*.js"
+    "dist/index.d.ts"
   ],
   "publishConfig": {
     "access": "public"
@@ -52,6 +50,11 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "avro-bangla-engine": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
