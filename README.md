@@ -1,35 +1,23 @@
 # avro-bangla-suggestions
 
-A lightweight React hook for Avro Phonetic Bangla suggestions and autocomplete. Easily integrate Bengali phonetic typing into your web applications.
+A lightweight React hook for Avro Phonetic Bangla suggestions and autocomplete.
 
 [![npm version](https://badge.fury.io/js/avro-bangla-suggestions.svg)](https://www.npmjs.com/package/avro-bangla-suggestions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://www.npmjs.com/package/avro-bangla-suggestions?activeTab=code)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Live Demo](https://img.shields.io/badge/Live-Demo-blue.svg)](https://avro-bangla-suggestions-demo.vercel.app/)
-
----
 
 ## Features
 
-- 🔤 Avro phonetics-to-Bangla suggestions in real time
-- ⌨️ Keyboard navigation (Arrow keys + Enter to select)
-- 🔄 Space-to-commit: pressing space auto-converts the current word
-- 📦 **Tiny package** (~7 KB) — the Avro engine loads from CDN at runtime
-- 🌐 Works with `<input>` and `<textarea>` elements
-- 🎨 Zero UI dependencies — bring your own suggestion UI
-
----
+- 🔤 Real-time Avro phonetics-to-Bangla suggestions
+- ⌨️ Keyboard navigation (Arrows + Enter)
+- 🔄 Space-to-commit for auto-conversion
+- 🎨 UI agnostic — bring your own suggestion list
 
 ## Installation
 
 ```bash
 npm install avro-bangla-suggestions
-# or
-yarn add avro-bangla-suggestions
-# or
-pnpm add avro-bangla-suggestions
 ```
-
----
 
 ## Quick Start
 
@@ -164,71 +152,36 @@ export default function BanglaInput() {
 }
 ```
 
----
+## API Reference
 
-## `useBanglaTyping` API
+### `useBanglaTyping(options)`
 
-### Parameters
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `mode` | `"bangla" \| "english"` | `"english"` | Toggle suggestions |
+| `initialText` | `string` | `""` | Initial value |
+| `onTextChange` | `(text: string) => void` | — | Text change callback |
 
-| Prop                  | Type                              | Default     | Description                                    |
-| --------------------- | --------------------------------- | ----------- | ---------------------------------------------- |
-| `mode`                | `"bangla" \| "english"`           | `"english"` | Enable Bangla suggestions only when `"bangla"` |
-| `initialText`         | `string`                          | `""`        | Initial value of the text state                |
-| `onTextChange`        | `(text: string) => void`          | —           | Called whenever the text changes               |
-| `onSuggestionsChange` | `(suggestions: string[]) => void` | —           | Called when the suggestion list updates        |
-| `onSuggestionsHidden` | `() => void`                      | —           | Called when suggestions are dismissed          |
+### Return Values
 
-### Returns
+| Value | Type | Description |
+| :--- | :--- | :--- |
+| `text` | `string` | Controlled value |
+| `handleChange` | `Fn` | Event handler for `onChange` |
+| `handleKeyDown` | `Fn` | Event handler for `onKeyDown` |
+| `suggestions` | `string[]` | Current suggestion list |
+| `applySuggestion` | `Fn(word, el?)` | Apply selected suggestion |
 
-| Name                      | Type                                                                          | Description                                    |
-| ------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------- |
-| `text`                    | `string`                                                                      | Current text value (use as controlled `value`) |
-| `handleChange`            | `ChangeEventHandler`                                                          | Attach to `onChange`                           |
-| `handleKeyDown`           | `KeyboardEventHandler`                                                        | Attach to `onKeyDown`                          |
-| `handlePaste`             | `ClipboardEventHandler`                                                       | Attach to `onPaste`                            |
-| `handleFocus`             | `() => void`                                                                  | Attach to `onFocus`                            |
-| `handleBlur`              | `() => void`                                                                  | Attach to `onBlur`                             |
-| `suggestions`             | `string[]`                                                                    | Current suggestion list                        |
-| `selectedSuggestionIndex` | `number`                                                                      | Index of the highlighted suggestion            |
-| `applySuggestion`         | `(word: string, el: HTMLInputElement \| HTMLTextAreaElement \| null) => void` | Call on suggestion click                       |
-| `isFocused`               | `boolean`                                                                     | Whether the input is focused                   |
-| `hideSuggestions`         | `() => void`                                                                  | Programmatically dismiss suggestions           |
+## Keyboard Shortcuts
 
-### Keyboard Shortcuts (Bangla mode)
+- `→` / `↓` : Next suggestion
+- `←` / `↑` : Previous suggestion
+- `Enter` : Apply selected
+- `Space` : Auto-convert current word
 
-| Key       | Action                               |
-| --------- | ------------------------------------ |
-| `→` / `↓` | Select next suggestion               |
-| `←` / `↑` | Select previous suggestion           |
-| `Enter`   | Apply selected suggestion            |
-| `Space`   | Auto-convert and commit current word |
-| `Click`   | Apply any suggestion                 |
+## Implementation Details
 
----
-
-## Engine Loading
-
-The Avro phonetics engine (`avro.min.js`) is **not bundled** in this package — it loads at runtime from a URL. This keeps the package size tiny (~7 KB).
-
-### Default (zero-config): jsDelivr CDN
-
-By default, the engine loads automatically from:
-```
-https://cdn.jsdelivr.net/npm/avro-bangla-engine@0.0.1/avro.min.js
-```
-
-**No setup required.** The engine is loaded once and cached for the page's lifetime.
-
-> jsDelivr has global edge caching, automatic CORS headers, and excellent uptime — safe for production use as-is.
-
-
-
----
-
-## TypeScript Types
-
-```ts
-import type { TAvroSuggestion } from "avro-bangla-suggestions";
-```
+- **Tiny Footprint**: The Avro engine is loaded from a CDN at runtime to keep smaller bundle size.
+- **Caching**: Engine is loaded once and shared across components.
 
 ---
