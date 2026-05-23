@@ -2,7 +2,7 @@
 
 ## Overview
 
-`avro-bangla-suggestions` is a React hook library for Avro Phonetic Bangla typing. It exposes a single hook (`useBanglaTyping`) and keeps zero runtime dependencies — the heavy phonetics engine loads lazily from a CDN.
+`avro-bangla-suggestions` is a React hook library for Avro Phonetic Bangla typing. It exposes a single hook (`useBanglaTyping`) and loads the heavy phonetics engine lazily from the `avro-bangla-engine` npm package.
 
 ---
 
@@ -56,17 +56,25 @@ Used by `instance.ts` (return type of `getSuggestion`) and `useBanglaTyping.ts`.
 The engine (`avro.min.js`) lives in the separate `avro-bangla-engine` npm package and is loaded at runtime via a dynamic `import()`:
 
 ```ts
-const { AvroPhonetic } = await import(/* @vite-ignore */ ENGINE_URL);
+const { AvroPhonetic } = await import("avro-bangla-engine/avro.min.js");
 ```
 
-The `/* @vite-ignore */` pragma tells Vite to skip static analysis of this import, which would otherwise try to bundle the URL at build time.
+Because this is a static package import, consumer bundlers can emit the engine as a same-origin JavaScript chunk. This avoids Content Security Policy failures for applications that use `script-src 'self'`.
+
+Consumers can still provide a custom `engineUrl`, which uses:
+
+```ts
+const { AvroPhonetic } = await import(/* @vite-ignore */ engineUrl);
+```
+
+That escape hatch is intended for self-hosting or applications with an explicitly approved asset URL.
 
 #### Singleton pattern
 
 ```
 First call to ensureAvroLoaded()
   └── Creates initPromise (Promise<void>)
-       └── Dynamically imports avro.min.js from CDN
+       └── Dynamically imports avro.min.js from npm package or custom URL
             └── Instantiates AvroPhonetic
                  └── Wires up avroSuggest / avroCommit / avroVersion closures
 
@@ -82,14 +90,13 @@ Subsequent calls → return the same initPromise (no re-import)
 | `setCommit(queryText, bnValue)` | Submits a committed word to the engine's candidate memory |
 | `getVersion()` | Returns the engine version string |
 
-#### Engine URL
+#### Engine source
 
 ```ts
-export const DEFAULT_ENGINE_URL =
-  "https://cdn.jsdelivr.net/npm/avro-bangla-engine@0.0.1/avro.min.js";
+export const DEFAULT_ENGINE_SOURCE = "avro-bangla-engine/avro.min.js";
 ```
 
-Served via [jsDelivr](https://www.jsdelivr.com/) with global edge caching and automatic CORS headers. Pinned to a specific version for stability.
+Bundled from npm by default and served by the consumer application. This is CSP-friendly for strict deployments.
 
 ---
 
@@ -106,6 +113,7 @@ interface UseBanglaTypingProps {
   onTextChange?:         (text: string) => void;
   onSuggestionsChange?:  (suggestions: string[]) => void;
   onSuggestionsHidden?:  () => void;
+  engineUrl?:            string;
 }
 ```
 
@@ -184,7 +192,7 @@ Disabled (`sourcemap: false`). Source maps were already excluded from the npm ta
 
 | Package | Version | Contents | Size |
 |---|---|---|---|
-| `avro-bangla-suggestions` | 0.0.7 | Hook + types | ~7 KB tarball |
+| `avro-bangla-suggestions` | 0.0.10 | Hook + engine chunk + types | ~1.2 MB tarball |
 | `avro-bangla-engine` | 0.0.1 | `avro.min.js` engine | ~3.9 MB |
 
-The engine package is published separately and consumed at runtime via CDN — it is never installed as a node_modules dependency by consumers.
+The engine package is installed as a dependency and consumed as a lazy-loaded chunk. Consumers that need a different hosting model can pass `engineUrl`.

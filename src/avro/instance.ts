@@ -1,42 +1,49 @@
 /**
  * Singleton Avro phonetics instance.
  *
- * Loads avro.min.js via dynamic import() from a configurable URL.
+ * Loads avro.min.js via dynamic import().
  *
- * Default URL uses jsDelivr CDN (served from the avro-bangla-engine npm package).
- * jsDelivr has global edge caching, CORS headers, and SLA-backed uptime.
+ * By default, the engine is imported from the installed `avro-bangla-engine`
+ * package so consumer bundlers serve it from their own origin.
  *
- * Zero-config for consumers — no setup required unless self-hosting.
- * The URL must point to the avro.min.js ES module file, which exports { AvroPhonetic }.
+ * Consumers may still pass a custom URL when they want to self-host the engine.
+ * The URL must point to an ES module file that exports { AvroPhonetic }.
  */
 import type { TAvroSuggestion } from "./types";
 
-/**
- * Default engine URL.
- *
- * Served via jsDelivr from the `avro-bangla-engine` npm package.
- * Uses a pinned version for stability — update when the engine package is republished.
- *
- * Alternative GitHub CDN (no npm publish needed):
- * https://cdn.jsdelivr.net/gh/hasnat-shohag/avro-bangla-engine@v0.0.1/avro.min.js
- */
-export const DEFAULT_ENGINE_URL =
-  "https://cdn.jsdelivr.net/npm/avro-bangla-engine@0.0.1/avro.min.js";
+type AvroEngineModule = {
+	AvroPhonetic: new (
+		loadCandidateSelections: () => Record<string, unknown>,
+		saveCandidateSelections: (candidateSelections: Record<string, unknown>) => void,
+	) => {
+		suggest: (query: string) => TAvroSuggestion;
+		candidate: (query: string) => string;
+		commit: (queryText: string, bnValue: string) => void;
+		version: string;
+	};
+};
+
+export const DEFAULT_ENGINE_SOURCE = "avro-bangla-engine/avro.min.js";
 
 let initPromise: Promise<void> | null = null;
-let resolvedUrl: string | null = null;
 
 let avroSuggest: (subtext: string) => TAvroSuggestion | null = () => null;
 let avroCommit: (queryText: string, bnValue: string) => void = () => {};
 let avroVersion: () => string = () => "";
 
-export async function ensureAvroLoaded(scriptUrl?: string): Promise<void> {
-	// If a new URL is provided and we haven't started yet, use it
-	if (!initPromise) {
-		resolvedUrl = scriptUrl ?? DEFAULT_ENGINE_URL;
+async function loadEngine(scriptUrl?: string): Promise<AvroEngineModule> {
+	if (scriptUrl) {
+		return import(/* @vite-ignore */ scriptUrl) as Promise<AvroEngineModule>;
+	}
 
+	return import("avro-bangla-engine/avro.min.js") as Promise<AvroEngineModule>;
+}
+
+export async function ensureAvroLoaded(scriptUrl?: string): Promise<void> {
+	// If a custom URL is provided and we haven't started yet, use it.
+	if (!initPromise) {
 		initPromise = (async () => {
-			const { AvroPhonetic } = await import(/* @vite-ignore */ resolvedUrl!);
+			const { AvroPhonetic } = await loadEngine(scriptUrl);
 
 			let CandidateSelection: Record<string, unknown> = {};
 			const avro = new AvroPhonetic(
