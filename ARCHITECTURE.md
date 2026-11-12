@@ -76,9 +76,10 @@ First call to ensureAvroLoaded()
   └── Creates initPromise (Promise<void>)
        └── Dynamically imports avro.min.js from npm package or custom URL
             └── Instantiates AvroPhonetic
-                 └── Wires up avroSuggest / avroCommit / avroVersion closures
+                 └── Wires up avroSuggest / avroCommit closures
 
 Subsequent calls → return the same initPromise (no re-import)
+Failed load      → initPromise is reset, so the next call retries
 ```
 
 #### Exported functions
@@ -88,15 +89,15 @@ Subsequent calls → return the same initPromise (no re-import)
 | `ensureAvroLoaded()` | Triggers engine load (idempotent, returns same Promise) |
 | `getSuggestion(subtext)` | Returns `TAvroSuggestion \| null` for the last word in `subtext` |
 | `setCommit(queryText, bnValue)` | Submits a committed word to the engine's candidate memory |
-| `getVersion()` | Returns the engine version string |
+| `isAvroLoaded()` | `true` once the engine is ready for synchronous `getSuggestion` calls |
+
+#### Candidate memory
+
+The user's picks (typed word → chosen suggestion) are handed to the engine on `commit` and persisted in `localStorage` under `avro-bangla-suggestions:candidate-selections`, so the engine preselects them (`prevSelection`) in later sessions. When storage is unavailable the memory lasts for the page only.
 
 #### Engine source
 
-```ts
-export const DEFAULT_ENGINE_SOURCE = "avro-bangla-engine/avro.min.js";
-```
-
-Bundled from npm by default and served by the consumer application. This is CSP-friendly for strict deployments.
+Imported from `avro-bangla-engine/avro.min.js` by default and served by the consumer application. This is CSP-friendly for strict deployments.
 
 ---
 
@@ -107,13 +108,15 @@ Bundled from npm by default and served by the consumer application. This is CSP-
 #### Props
 
 ```ts
-interface UseBanglaTypingProps {
+interface UseBanglaTypingOptions {
   initialText?:          string;
+  value?:                string;            // controlled text
   mode?:                 "bangla" | "english";
   onTextChange?:         (text: string) => void;
   onSuggestionsChange?:  (suggestions: string[]) => void;
   onSuggestionsHidden?:  () => void;
   engineUrl?:            string;
+  navigationKeys?:       "all" | "vertical";
 }
 ```
 
@@ -174,9 +177,9 @@ Suggestions are debounced by **200 ms** to avoid calling the engine on every key
 | Format | File | Use case |
 |---|---|---|
 | ES Module | `dist/index.es.js` | Modern bundlers (webpack, Vite, Rollup) |
-| UMD | `dist/index.umd.js` | Legacy / CDN `<script>` tag usage |
+| CommonJS | `dist/index.cjs` | `require()` consumers |
 
-`react` and `react-dom` are listed as **externals** — they are not bundled into the output. Consumers must supply their own React.
+`react` and `avro-bangla-engine` are listed as **externals** — they are not bundled into the output. Consumers supply their own React, and their bundler resolves the engine from the installed `avro-bangla-engine` dependency.
 
 ### Type declarations
 
@@ -184,7 +187,7 @@ Suggestions are debounced by **200 ms** to avoid calling the engine on every key
 
 ### Sourcemaps
 
-Disabled (`sourcemap: false`). Source maps were already excluded from the npm tarball via `.npmignore` — disabling them keeps the build output clean.
+Disabled (`sourcemap: false`). The npm tarball contains only `dist/` (via the `files` field in `package.json`).
 
 ---
 
@@ -192,7 +195,7 @@ Disabled (`sourcemap: false`). Source maps were already excluded from the npm ta
 
 | Package | Version | Contents | Size |
 |---|---|---|---|
-| `avro-bangla-suggestions` | 0.0.10 | Hook + engine chunk + types | ~1.2 MB tarball |
+| `avro-bangla-suggestions` | 0.0.10 | Hook + types (engine not bundled) | ~7 kB tarball |
 | `avro-bangla-engine` | 0.0.1 | `avro.min.js` engine | ~3.9 MB |
 
-The engine package is installed as a dependency and consumed as a lazy-loaded chunk. Consumers that need a different hosting model can pass `engineUrl`.
+The engine package is installed as a dependency and stays external to this package's build; the consumer's bundler turns the dynamic `import()` into a lazy-loaded chunk. Consumers that need a different hosting model can pass `engineUrl`.

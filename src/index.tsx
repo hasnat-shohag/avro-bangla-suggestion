@@ -5,4 +5,8 @@
  */
 
 export { useBanglaTyping } from "./avro/useBanglaTyping";
+export type {
+	UseBanglaTypingOptions,
+	UseBanglaTypingResult,
+} from "./avro/useBanglaTyping";
 export type { TAvroSuggestion } from "./avro/types";

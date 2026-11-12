@@ -159,8 +159,13 @@ export default function BanglaInput() {
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `mode` | `"bangla" \| "english"` | `"english"` | Toggle suggestions |
-| `initialText` | `string` | `""` | Initial value |
+| `initialText` | `string` | `""` | Initial value (uncontrolled) |
+| `value` | `string` | — | Controlled value; keep it in your own state and update it from `onTextChange` |
 | `onTextChange` | `(text: string) => void` | — | Text change callback |
+| `onSuggestionsChange` | `(suggestions: string[]) => void` | — | Called when the suggestion list changes |
+| `onSuggestionsHidden` | `() => void` | — | Called when suggestions are dismissed |
+| `navigationKeys` | `"all" \| "vertical"` | `"all"` | `"vertical"` leaves `←` / `→` free to move the caret |
+| `engineUrl` | `string` | — | Self-hosted ES module URL for the engine (shared by all hook instances) |
 
 ### Return Values
 
@@ -169,19 +174,27 @@ export default function BanglaInput() {
 | `text` | `string` | Controlled value |
 | `handleChange` | `Fn` | Event handler for `onChange` |
 | `handleKeyDown` | `Fn` | Event handler for `onKeyDown` |
+| `handleFocus` / `handleBlur` | `Fn` | Event handlers for `onFocus` / `onBlur` |
+| `isFocused` | `boolean` | Whether the input has focus |
 | `suggestions` | `string[]` | Current suggestion list |
-| `applySuggestion` | `Fn(word, el?)` | Apply selected suggestion |
+| `selectedSuggestionIndex` | `number` | Highlighted suggestion; starts on your previous pick for that word |
+| `applySuggestion` | `Fn(word, el)` | Apply a suggestion to the given input element |
+| `hideSuggestions` | `Fn` | Dismiss the suggestion list |
+
+The `UseBanglaTypingOptions` and `UseBanglaTypingResult` types are exported.
 
 ## Keyboard Shortcuts
 
 - `→` / `↓` : Next suggestion
 - `←` / `↑` : Previous suggestion
 - `Enter` : Apply selected
+- `Esc` : Dismiss suggestions
 - `Space` : Auto-convert current word
 
 ## Implementation Details
 
-- **Tiny Footprint**: The Avro engine is loaded from a CDN at runtime to keep smaller bundle size.
+- **Tiny Footprint**: The Avro engine lives in the separate `avro-bangla-engine` package and is lazy-loaded the first time Bangla mode is used.
 - **Caching**: Engine is loaded once and shared across components.
+- **Learns your picks**: The suggestion you choose for a word is preselected next time. Picks are saved in `localStorage` under `avro-bangla-suggestions:candidate-selections`.
 
 ---

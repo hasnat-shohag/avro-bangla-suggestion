@@ -11,18 +11,14 @@ export default defineConfig({
 		lib: {
 			entry: path.resolve(__dirname, "src/index.tsx"),
 			name: "avro-bangla-suggestions",
-			fileName: (format) => `index.${format}.js`,
+			formats: ["es", "cjs"],
+			fileName: (format) => (format === "es" ? "index.es.js" : "index.cjs"),
 		},
 		rollupOptions: {
-			external: ["react", "react-dom"],
-			output: {
-				globals: {
-					react: "React",
-					"react-dom": "ReactDOM",
-				},
-			},
+			// The engine stays an external dependency: consumer bundlers resolve
+			// `avro-bangla-engine` themselves and lazy-load it as their own chunk.
+			external: ["react", /^avro-bangla-engine(\/|$)/],
 		},
-		// Sourcemaps excluded from npm via .npmignore anyway; disable to keep build clean
 		sourcemap: false,
 		emptyOutDir: true,
 	},
