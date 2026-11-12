@@ -20,8 +20,8 @@
     "input",
     "bangla-input",
     "transliteration"
-],
-  "version": "0.0.6",
+  ],
+  "version": "0.0.10",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -34,11 +34,7 @@
     }
   },
   "files": [
-    "dist/index.es.js",
-    "dist/index.umd.js",
-    "dist/index.d.ts",
-    "dist/avro",
-    "dist/avro.min-*.js"
+    "dist"
   ],
   "publishConfig": {
     "access": "public"
@@ -72,5 +68,8 @@
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^3.9.1"
+  },
+  "dependencies": {
+    "avro-bangla-engine": "^0.0.1"
   }
 }

@@ -8,12 +8,10 @@ interface UseBanglaTypingProps {
 	onSuggestionsChange?: (suggestions: Array<string>) => void;
 	onSuggestionsHidden?: () => void;
 	mode?: "bangla" | "english";
+	engineUrl?: string;
 }
 
 const DEBOUNCE_DELAY = 200;
-
-// Kick off the avro.min.js dynamic import immediately (background load)
-void ensureAvroLoaded();
 
 export function useBanglaTyping({
 	initialText = "",
@@ -21,6 +19,7 @@ export function useBanglaTyping({
 	onSuggestionsChange,
 	onSuggestionsHidden,
 	mode = "english",
+	engineUrl,
 }: UseBanglaTypingProps = {}) {
 	const [text, setText] = useState(initialText);
 	const [suggestions, setSuggestions] = useState<Array<string>>([]);
@@ -30,6 +29,9 @@ export function useBanglaTyping({
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const suggestionsVisibleRef = useRef<boolean>(false);
 	const suggestionForWordRef = useRef<string>("");
+
+	// Kick off the engine load immediately in the background
+	void ensureAvroLoaded(engineUrl);
 
 	useEffect(() => {
 		setText(initialText);
@@ -77,7 +79,7 @@ export function useBanglaTyping({
 				}
 
 				// Ensure avro is loaded before calling getSuggestion
-				await ensureAvroLoaded();
+				await ensureAvroLoaded(engineUrl);
 				const res = getSuggestion(currentWord);
 
 				if (res && res.words.length > 0) {
@@ -196,7 +198,7 @@ export function useBanglaTyping({
 					convertedWord = suggestions[selectedSuggestionIndex];
 				} else {
 					try {
-						await ensureAvroLoaded();
+						await ensureAvroLoaded(engineUrl);
 						const res = getSuggestion(currentWord.trim());
 						if (res && res.words.length > 0) {
 							convertedWord = res.words[0];

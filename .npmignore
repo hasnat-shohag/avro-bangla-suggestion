@@ -10,6 +10,7 @@ tsconfig*.json
 eslint.config.js
 index.html
 package-lock.json
+ARCHITECTURE.md
 
 # Sourcemaps
 **/*.map
